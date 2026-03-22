@@ -1,14 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlanIt</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanIt</title>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Icons -->
-  <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
+<body>
+
+    <div class="page">
+
+        <!-- TOPO -->
+        <div class="topbar">
+            <div class="topbar-content">
+                <button class="tab-btn" id="tabLista" onclick="mostrarAba('lista')">☰ Lista</button>
+                <button class="tab-btn active" id="tabCalendario" onclick="mostrarAba('calendario')">Calendário</button>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <!-- HEADER -->
+            <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+                <h1 class="text-4xl font-bold">PlanIt</h1>
+
+                <button onclick="abrirModal()"
+                    class="bg-indigo-500 hover:bg-indigo-600 px-5 py-2 rounded-xl font-semibold">
+                    + Nova Tarefa
+                </button>
+            </div>
+
+            <!-- STATS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+                <div class="bg-slate-800 p-6 rounded-2xl">
+                    <p class="text-gray-400 text-sm">Total</p>
+                    <h2 id="stat-total" class="text-3xl font-bold mt-2">0</h2>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-2xl">
+                    <p class="text-gray-400 text-sm">Pendentes</p>
+                    <h2 id="stat-pending" class="text-yellow-400 text-3xl font-bold mt-2">0</h2>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-2xl">
+                    <p class="text-gray-400 text-sm">Concluídas</p>
+                    <h2 id="stat-done" class="text-green-400 text-3xl font-bold mt-2">0</h2>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-2xl">
+                    <p class="text-gray-400 text-sm">Progresso</p>
+                    <h2 id="stat-progress" class="text-indigo-400 text-3xl font-bold mt-2">0%</h2>
+                </div>
+            </div>
+
+            <!-- ABA LISTA -->
+            <section id="abaLista" style="display: none;">
+                <div id="filtros" class="flex items-center gap-3 mb-6 flex-wrap">
+                    <span class="text-gray-400 text-sm">Filtrar:</span>
+
+                    <button onclick="setFiltro('todas')"
+                        class="filter-btn active bg-indigo-500 px-4 py-1.5 rounded-full text-sm">
+                        Todas
+                    </button>
+
+                    <button onclick="setFiltro('pendentes')"
+                        class="filter-btn bg-slate-700 px-4 py-1.5 rounded-full text-sm">
+                        Pendentes
+                    </button>
+
+                    <button onclick="setFiltro('concluidas')"
+                        class="filter-btn bg-slate-700 px-4 py-1.5 rounded-full text-sm">
+                        Concluídas
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">📋 Lista de Tarefas</h2>
+                    <div id="task-list"></div>
+                </div>
+            </section>
+
+            <!-- ABA CALENDÁRIO -->
+            <section id="abaCalendario">
+                <div class="calendar-header">
+                    <h1 class="calendar-title" id="calendarTitle">Março de 2026</h1>
+
+                    <div class="calendar-controls">
+                        <button class="nav-btn" id="prevMonth">‹</button>
+                        <button class="today-btn" id="todayBtn">Hoje</button>
+                        <button class="nav-btn" id="nextMonth">›</button>
+                    </div>
+                </div>
+
+                <div class="calendar-box">
+                    <div class="calendar-weekdays">
+                        <div class="weekday">DOM</div>
+                        <div class="weekday">SEG</div>
+                        <div class="weekday">TER</div>
+                        <div class="weekday">QUA</div>
+                        <div class="weekday">QUI</div>
+                        <div class="weekday">SEX</div>
+                        <div class="weekday">SÁB</div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- MODAL -->
+     <div id="modal" class="modal">
+    <div class="modal-content modal-tarefa">
+        <div class="modal-header">
+            <h2>Nova Tarefa</h2>
+            <button class="modal-close" onclick="fecharModal()">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label for="titulo">Título *</label>
+            <input id="titulo" type="text" placeholder="O que precisa ser feito?">
+        </div>
+
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" placeholder="Detalhes opcionais..."></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade">
+                    <option value="baixa">Baixa</option>
+                    <option value="media" selected>Média</option>
+                    <option value="alta">Alta</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="categoria">Categoria</label>
+                <select id="categoria">
+                    <option value="geral" selected>Geral</option>
+                    <option value="estudo">Estudo</option>
+                    <option value="trabalho">Trabalho</option>
+                    <option value="pessoal">Pessoal</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="data">Data de Vencimento</label>
+            <input id="data" type="date">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-salvar" onclick="salvarTarefa()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
